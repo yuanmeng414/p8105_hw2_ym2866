@@ -14,7 +14,7 @@ library(readxl)
 # Problem 1
 
 ```{r message = FALSE}
-trash_data = read_excel("/Users/yuanmeng/Desktop/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", range = "A2:N535") #Read Excel file and omit non-data entries
+trash_data = read_excel("/Users/yuanmeng/Desktop/Fall 2021/P8105 Data Science/DS_Hw/p8105_hw2_ym2866/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", range = "A2:N535") #Read Excel file and omit non-data entries
 trash_data
 ```
 
@@ -26,8 +26,8 @@ mutate(trash_data, sports_balls = round(sports_balls)) #round the number of spor
 ```
 
 ```{r message = FALSE}
-precipitation_19 = read_excel("/Users/yuanmeng/Desktop/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = 6, range = "A2:B14") #omit rows without precipitation data
-precipitation_18 = read_excel("/Users/yuanmeng/Desktop/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = 7, range = "A2:B14") #omit rows without precipitation data
+precipitation_19 = read_excel("/Users/yuanmeng/Desktop/Fall 2021/P8105 Data Science/DS_Hw/p8105_hw2_ym2866/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = 6, range = "A2:B14") #omit rows without precipitation data
+precipitation_18 = read_excel("/Users/yuanmeng/Desktop/Fall 2021/P8105 Data Science/DS_Hw/p8105_hw2_ym2866/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = 7, range = "A2:B14") #omit rows without precipitation data
 precipitation_19 = mutate(precipitation_19, year = "2019") #add a variable for year
 precipitation_18 = mutate(precipitation_18, year = "2018") #add a variable for year
 precipitation_19
@@ -35,7 +35,7 @@ precipitation_18
 ```
 
 ```{r}
-prec_data = merge(precipitation_19, precipitation_18, all.x = TRUE, all.y = TRUE) # combine precipitation datasets
+prec_data = bind_rows(precipitation_19, precipitation_18) # combine precipitation datasets
 prec_data
 as.character(month.name) #convert month to a character variable
 ```
@@ -44,6 +44,45 @@ The number of observation in Trash Wheel Collection Totals data is on 453 dumpst
 The number of total observation in combine 2019 and 2018 precipitation datasets is `r nrow(prec_data)`. The data include `r ncol(prec_data)` variables. They are month total and year. The total precipitation in 2018 is 70.33 and total  precipitation in 2019 is 33.95.  The median number of sports balls in a dumpster in 2019 is `r median(as.numeric(unlist(precipitation_19[1:12,2])))`.
 
 # Problem 2
+```{r message = FALSE}
+pols_month = read_csv("./fivethirtyeight_datasets/pols-month.csv")
+pols_month = separate(pols_month,1,c("year","month","day"),sep="-") # break up the variable into integer variables
+pols_month
+pols_month %>% 
+  mutate(month = month.name[as.numeric(month)]) #replace month number with month name
+pols_month = mutate(pols_month, president = ifelse(prez_gop == 1, "gop","dem"))
+pols_month = select(pols_month, -c(prez_dem, prez_gop, day)) #remove prez_dem and prez_gop; and remove the day variable.
+```
+
+```{r}
+snp_data = read_csv("./fivethirtyeight_datasets/snp.csv")
+snp_data = separate(snp_data,1,c("month","day","year"),sep="/") #break up the variable into integer variables year, month, and day;
+snp_data = snp_data %>% 
+  mutate(month = month.name[as.numeric(month)]) #replace month number with month name
+snp_data = snp_data [, c("year", "month", "day","close")] #organize let year and month are the leading columns.
+snp_data
+```
+
+```{r message = FALSE}
+unemployment_data = read_csv("./fivethirtyeight_datasets/unemployment.csv")
+unemployment_data = unemployment_data %>%
+  pivot_longer(!Year, names_to = "Month", values_to = "unemployment_rate")#switching from “wide” to “long” format
+unemployment_data
+```
+
+```{r}
+join_pols_snp = full_join(pols_month,snp_data)#merging snp into pols
+join_unemployment = bind_rows(join_pols_snp,unemployment_data) #merging unemployment into the result
+join_pols_snp
+join_unemployment
+```
+The pols_month dataset have 11 variables and 1609 observations.The key variables are year, month,president,gov_gop,sen_gop,rep_gop,gov_dem,sen_dem,rep_dem. The snp dataset have 4 variables and 787 observations. The key variables are year,month,day,close. The unemployment dataset have 3 variables and 816 observations. The key variables are year month and unemployment rate. The dataset merge snp, pols and unemployment have 14 variables and 533 observation. The key variables are variables from pols_month, snp_data and unemployment_data.
+
+#Problem3
+```{r}
+
+```
+
 
 
 

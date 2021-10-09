@@ -1,0 +1,50 @@
+---
+title: "Hw2"
+author: "Yuan Meng"
+date: 2021-10-7
+output: github_document
+---
+
+```{r setup, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+```
+
+# Problem 1
+
+```{r message = FALSE}
+trash_data = read_excel("/Users/yuanmeng/Desktop/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", range = "A2:N535") #Read Excel file and omit non-data entries
+trash_data
+```
+
+```{r}
+trash_data= janitor::clean_names(trash_data) 
+names(trash_data) #use reasonable variable names
+drop_na(trash_data, dumpster) #omit rows that do not include dumpster-specific data
+mutate(trash_data, sports_balls = round(sports_balls)) #round the number of sports balls to the nearest integer
+```
+
+```{r message = FALSE}
+precipitation_19 = read_excel("/Users/yuanmeng/Desktop/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = 6, range = "A2:B14") #omit rows without precipitation data
+precipitation_18 = read_excel("/Users/yuanmeng/Desktop/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", sheet = 7, range = "A2:B14") #omit rows without precipitation data
+precipitation_19 = mutate(precipitation_19, year = "2019") #add a variable for year
+precipitation_18 = mutate(precipitation_18, year = "2018") #add a variable for year
+precipitation_19
+precipitation_18
+```
+
+```{r}
+prec_data = merge(precipitation_19, precipitation_18, all.x = TRUE, all.y = TRUE) # combine precipitation datasets
+prec_data
+as.character(month.name) #convert month to a character variable
+```
+The number of observation in Trash Wheel Collection Totals data is on 453 dumpster.The data include `r ncol(trash_data)-1` key variables, they are  "month", "year", "date", "weight_tons", "volume_cubic_yards", "plastic_bottles", "polystyrene", "cigarette_butts", "glass_bottles", "grocery_bags", "chip_bags", "sports_balls", "homes_powered".  
+
+The number of total observation in combine 2019 and 2018 precipitation datasets is `r nrow(prec_data)`. The data include `r ncol(prec_data)` variables. They are month total and year. The total precipitation in 2018 is 70.33 and total  precipitation in 2019 is 33.95.  The median number of sports balls in a dumpster in 2019 is `r median(as.numeric(unlist(precipitation_19[1:12,2])))`.
+
+# Problem 2
+
+
+
+

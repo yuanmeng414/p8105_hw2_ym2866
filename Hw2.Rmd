@@ -47,11 +47,11 @@ The number of total observation in combine 2019 and 2018 precipitation datasets 
 ```{r message = FALSE}
 pols_month = read_csv("./fivethirtyeight_datasets/pols-month.csv")
 pols_month = separate(pols_month,1,c("year","month","day"),sep="-") # break up the variable into integer variables
-pols_month
-pols_month %>% 
+pols_month = pols_month %>% 
   mutate(month = month.name[as.numeric(month)]) #replace month number with month name
 pols_month = mutate(pols_month, president = ifelse(prez_gop == 1, "gop","dem"))
 pols_month = select(pols_month, -c(prez_dem, prez_gop, day)) #remove prez_dem and prez_gop; and remove the day variable.
+pols_month
 ```
 
 ```{r}
@@ -71,19 +71,48 @@ unemployment_data
 ```
 
 ```{r}
-join_pols_snp = full_join(pols_month,snp_data)#merging snp into pols
+join_pols_snp = full_join(pols_month,snp_data )#merging snp into pols
 join_unemployment = bind_rows(join_pols_snp,unemployment_data) #merging unemployment into the result
 join_pols_snp
 join_unemployment
 ```
 The pols_month dataset have 11 variables and 1609 observations.The key variables are year, month,president,gov_gop,sen_gop,rep_gop,gov_dem,sen_dem,rep_dem. The snp dataset have 4 variables and 787 observations. The key variables are year,month,day,close. The unemployment dataset have 3 variables and 816 observations. The key variables are year month and unemployment rate. The dataset merge snp, pols and unemployment have 14 variables and 533 observation. The key variables are variables from pols_month, snp_data and unemployment_data.
 
-#Problem3
+# Problem3
 ```{r}
+popular_Baby_Names = read.csv("./Popular_Baby_Names.csv")
+popular_Baby_Names = 
+  popular_Baby_Names %>% 
+  mutate(Child.s.First.Name = tolower(Child.s.First.Name),Gender = tolower(Gender),Ethnicity = tolower(Ethnicity )) #change children's name gender and ethnicity to lower case letter
+  popular_Baby_Names["Ethnicity"][popular_Baby_Names["Ethnicity"]== "asian and paci"] <-"asian and pacific islander"
+  popular_Baby_Names["Ethnicity"][popular_Baby_Names["Ethnicity"]== "black non hisp"] <-"black non hispanic"
+  popular_Baby_Names["Ethnicity"][popular_Baby_Names["Ethnicity"]== "white non hisp"] <-"white non hispanic" # Under ethnicity there are lots of inconsistent ethnicity names. Change then to consistent 
+popular_Baby_Names = popular_Baby_Names %>% distinct() #delete duplicated rows
+popular_Baby_Names
+```
 
+```{r}
+olivia_data = filter(popular_Baby_Names, Child.s.First.Name == "olivia") #filter out children who name Olivia
+olivia_data = select(olivia_data, -c(Child.s.First.Name, Count, Gender)) #delete gender, count,name, columns 
+olivia_data = olivia_data %>%
+  pivot_wider(names_from = Year.of.Birth, values_from = Rank) # let the dataset have rows for ethnicity and columns for year
+olivia_data
 ```
 
 
+```{r}
+male_data = filter(popular_Baby_Names, Gender == "male" & Rank == 1 ) #filter out male children
+male_data = select(male_data, -c(Count, Gender, Rank))  #delete gender, count,name, columns
+male_data = male_data %>% pivot_wider(names_from = Year.of.Birth, values_from = Child.s.First.Name)# let the dataset have rows for ethnicity and columns for year
+male_data
+```
+
+
+```{r}
+names_plot = filter(popular_Baby_Names, Gender == "male" & Ethnicity == "white non hispanic" & Year.of.Birth == 2016) #filter male, white non-hispanic children born in 2016
+ggplot(names_plot, aes(x = Rank , y = Count)) + geom_point(aes(), alpha = 0.5) # scatter plot showing the number of children with a name against the rank in popularity of that name
+ggsave("8105_hw2_ym2866.pdf")
+```
 
 
 
